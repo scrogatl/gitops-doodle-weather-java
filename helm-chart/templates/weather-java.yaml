@@ -30,8 +30,13 @@ spec:
           value: {{ .Values.shard | quote }}
         - name: SERVER_PORT
           value: "5100"
-        - name: OTEL_SERVICE_NAME
-          value: "weather-java-otel"
+        - name: NEW_RELIC_APP_NAME
+          value: {{ .Values.newrelic.appName | quote }}
+        - name: NEW_RELIC_LICENSE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.newrelic.secretName }}
+              key: {{ .Values.newrelic.secretKey }}
         ports:
         - containerPort: 5100
           name: application

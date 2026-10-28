@@ -22,11 +22,17 @@ docker build -t gitops-doodle-weather-java .
 docker run -p 5100:5100 -e SHARD=local gitops-doodle-weather-java
 ```
 
-### 3. Run with OpenTelemetry Auto-Instrumentation
+### 3. Run with the New Relic Java APM Agent
+The image bundles the agent at `/app/newrelic/newrelic.jar` and starts it via `-javaagent`.
 ```bash
 docker run -p 5100:5100 \
-  -e JAVA_TOOL_OPTIONS="-javaagent:/app/opentelemetry-javaagent.jar" \
-  -e OTEL_SERVICE_NAME="weather-java-otel" \
-  -e OTEL_EXPORTER_OTLP_ENDPOINT="http://nrdot-collector:4317" \
+  -e NEW_RELIC_LICENSE_KEY=<your key> \
+  -e NEW_RELIC_APP_NAME=doodle-weather-java \
   gitops-doodle-weather-java
+```
+Pin the agent version with `--build-arg NR_AGENT_VERSION=8.21.0` (default: `current`).
+
+On Kubernetes the chart reads the key from secret `nr-license-key` (key `license-key`):
+```bash
+kubectl -n supreme-doodle create secret generic nr-license-key --from-literal=license-key=<your key>
 ```

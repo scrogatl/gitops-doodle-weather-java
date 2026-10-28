@@ -14,13 +14,19 @@ RUN mvn clean package -DskipTests -B
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Download OpenTelemetry Java agent for zero-code instrumentation
-RUN wget -q -O /app/opentelemetry-javaagent.jar \
-    https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar || true
+# Download the New Relic Java APM agent (set NR_AGENT_VERSION to pin, e.g. 8.21.0)
+ARG NR_AGENT_VERSION=current
+RUN wget -q -O /tmp/newrelic-java.zip \
+    https://download.newrelic.com/newrelic/java-agent/newrelic-agent/${NR_AGENT_VERSION}/newrelic-java.zip \
+    && unzip -q /tmp/newrelic-java.zip -d /app \
+    && rm /tmp/newrelic-java.zip
 
 COPY --from=builder /build/target/*.jar /app/app.jar
 
-ENV SERVER_PORT=5100
+ENV SERVER_PORT=5100 \
+    NEW_RELIC_APP_NAME=doodle-weather-java \
+    NEW_RELIC_LOG_FILE_NAME=STDOUT \
+    NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true
 EXPOSE 5100
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-javaagent:/app/newrelic/newrelic.jar", "-jar", "/app/app.jar"]

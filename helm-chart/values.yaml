@@ -3,11 +3,15 @@ replicaCount: 1
 image:
   repository: ghcr.io/scrogatl/doodle-weather-java
   pullPolicy: Always
-  tag: "latest"
+  tag: "newrelic"
 
 service:
   type: ClusterIP
   port: 5100
 
 shard: "blue"
-nr_key: ""
+
+newrelic:
+  appName: "doodle-weather-java"
+  secretName: "nr-license-key"
+  secretKey: "license-key"
