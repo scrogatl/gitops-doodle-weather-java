@@ -1,6 +1,6 @@
 apiVersion: v2
 name: doodle-weather-java
-description: A Helm chart for Doodle Weather Java microservice
+description: Helm chart for doodle-weather-java (matches supreme-doodle k8s manifest)
 type: application
-version: 0.1.0
-appVersion: "1.0.0"
+version: 0.2.0
+appVersion: "0.9.1"

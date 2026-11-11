@@ -1,13 +1,29 @@
+name: doodle-weather-java
 replicaCount: 1
-
+labels:
+  app.kubernetes.io/name: doodle-weather-java
+  application: helloworld
+  service: doodle-weather-java
+  version: blue
+  shard: blue
 image:
   repository: ghcr.io/scrogatl/doodle-weather-java
+  tag: main
   pullPolicy: Always
-  tag: "latest"
-
+containerName: doodle-weather-java
+env:
+- name: SHARD
+  value: blue
+- name: PYTHONUNBUFFERED
+  value: '1'
+ports:
+- containerPort: 5100
+  name: application
+  protocol: TCP
 service:
+  name: doodle-weather-java
   type: ClusterIP
-  port: 5100
-
-shard: "blue"
-nr_key: ""
+  ports:
+  - name: http
+    appProtocol: http
+    port: 5100
