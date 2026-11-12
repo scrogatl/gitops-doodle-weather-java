@@ -41,7 +41,7 @@ public class WeatherController {
 
     @GetMapping("/weatherforecast")
     public List<WeatherForecast> getWeatherForecast() throws Exception {
-        log.info("Request received on thread: {}", Thread.currentThread().getName());
+        log.info("[weather-java] request served by weather-java (thread: {})", Thread.currentThread().getName());
 
         // Asynchronously compute weather components across dedicated worker threads
         CompletableFuture<Integer> tempFuture = CompletableFuture.supplyAsync(() -> {
