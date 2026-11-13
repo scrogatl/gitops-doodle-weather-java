@@ -5,6 +5,15 @@
 
 # Build the app once
 FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
+# Optional: trust an extra CA (for local builds behind TLS inspection). Pass it with
+#   docker build --secret id=extra_ca,src=ca.pem ...
+# Does nothing when the secret is absent, so CI builds are unaffected.
+RUN --mount=type=secret,id=extra_ca \
+    if [ -s /run/secrets/extra_ca ]; then \
+      cp /run/secrets/extra_ca /usr/local/share/ca-certificates/extra-ca.crt && update-ca-certificates \
+      && awk '/BEGIN CERT/{n++} {print > ("/tmp/xca" n ".pem")}' /run/secrets/extra_ca \
+      && for f in /tmp/xca*.pem; do keytool -importcert -noprompt -cacerts -storepass changeit -alias "extra-$(basename $f .pem)" -file "$f"; done; \
+    fi
 WORKDIR /build
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
@@ -13,6 +22,10 @@ RUN mvn clean package -DskipTests -B
 
 # Shared runtime base
 FROM eclipse-temurin:21-jre-alpine AS base
+RUN --mount=type=secret,id=extra_ca \
+    if [ -s /run/secrets/extra_ca ]; then \
+      cp /run/secrets/extra_ca /usr/local/share/ca-certificates/extra-ca.crt && update-ca-certificates; \
+    fi
 WORKDIR /app
 COPY --from=builder /build/target/*.jar /app/app.jar
 ENV SERVER_PORT=5100
